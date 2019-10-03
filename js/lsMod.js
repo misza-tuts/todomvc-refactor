@@ -22,10 +22,12 @@ export const lsMod = {
     })
   },
 
-  async deleteTodo(id) {
+  async deleteTodo(todo) {
     await this.getTodos().then(function(data){
-      //var foundIndex = data.find(x => x.id === id)
-      data = data.splice(_.indexOf(data, _.findWhere(data, { id : id})), 1);
+      let index = data.map(function(x) {return x.id; }).indexOf(todo.id);
+      data = data.filter(function(ele){
+        return ele != data[index];
+      });
       lsMod.setLocalStorage(data);
     });    
   },

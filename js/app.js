@@ -201,9 +201,12 @@ jQuery(function ($) {
 			});
 			
 		},
-		destroy: function (e) {
+		destroy: async function (e) {
 			this.todos.splice(this.indexFromEl(e.target), 1);
-			this.render();
+			let todo = this.getTodo(e);
+			await dbMod.deleteTodo(todo).then(()=>{
+				this.render();
+			});
 		},
 		getTodo(e){			
 			var $el = $(e.target).parent();

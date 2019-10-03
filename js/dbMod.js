@@ -25,10 +25,10 @@ export const dbMod = {
     await Promise.all(promises);
   },
 
-  async deleteTodo(id){
+  async deleteTodo(todo){
     let promises = [];    
     appMode.forEach(elem => {
-      promises.push(elem.deleteTodo(id));
+      promises.push(elem.deleteTodo(todo));
     })
     await Promise.all(promises);
   }
