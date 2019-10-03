@@ -3,6 +3,9 @@ import Handlebars from 'handlebars'
 import { Router } from 'director/build/director'
 import axios from 'axios'
 import { dbMod } from './dbMod'
+import 'regenerator-runtime/runtime'  
+ 
+
 
 /*global jQuery, Handlebars, Router */
 jQuery(function ($) {
@@ -29,34 +32,29 @@ jQuery(function ($) {
 				uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
 			}
 
-			return uuid;
+		 	return uuid;
 		},
 		pluralize: function (count, word) {
 			return count === 1 ? word : word + 's';
-		},
-		store: function (namespace, data) {
-			if (arguments.length > 1) {
-				return localStorage.setItem(namespace, JSON.stringify(data));
-			} else {
-				var store = localStorage.getItem(namespace);
-				return (store && JSON.parse(store)) || [];
-			}
 		}
 	};
 
 	var App = {
-		init: function () {
-			this.todos = util.store('todos-jquery');
-			this.todoTemplate = Handlebars.compile($('#todo-template').html());
-			this.footerTemplate = Handlebars.compile($('#footer-template').html());
-			this.bindEvents();
+		init: async function () {
+			let initF = this;
+			 await dbMod.getTodos().then(function(data){
+				initF.todos = data;
+				initF.todoTemplate = Handlebars.compile($('#todo-template').html());
+				initF.footerTemplate = Handlebars.compile($('#footer-template').html());
+				initF.bindEvents();
 
-			new Router({
-				'/:filter': function (filter) {
-					this.filter = filter;
-					this.render();
-				}.bind(this)
-			}).init('/all');
+				new Router({
+					'/:filter': function (filter) {
+						initF.filter = filter;
+						initF.render();
+					}.bind(initF)
+				}).init('/all');
+			});
 		},
 		bindEvents: function () {
 			$('#new-todo').on('keyup', this.create.bind(this));
@@ -69,14 +67,14 @@ jQuery(function ($) {
 				.on('focusout', '.edit', this.update.bind(this))
 				.on('click', '.destroy', this.destroy.bind(this));
 		},
-		render: function () {
+		render: async function () {
 			var todos = this.getFilteredTodos();
 			$('#todo-list').html(this.todoTemplate(todos));
 			$('#main').toggle(todos.length > 0);
 			$('#toggle-all').prop('checked', this.getActiveTodos().length === 0);
 			this.renderFooter();
 			$('#new-todo').focus();
-			util.store('todos-jquery', this.todos);
+			//await util.store('todos-jquery', this.todos);
 		},
 		renderFooter: function () {
 			var todoCount = this.todos.length;
@@ -138,7 +136,7 @@ jQuery(function ($) {
 				}
 			}
 		},
-		create: function (e) {
+		create: async function (e) {
 			var $input = $(e.target);
 			var val = $input.val().trim();
 
@@ -146,20 +144,27 @@ jQuery(function ($) {
 				return;
 			}
 
-			this.todos.push({
+			let todo = {
 				id: util.uuid(),
 				title: val,
 				completed: false
-			});
+			}
+
+			this.todos.push(todo);
 
 			$input.val('');
-
-			this.render();
+				await dbMod.createTodo(todo).then(()=> {
+					this.render();
+				});			
 		},
-		toggle: function (e) {
+		toggle: async function (e) {
 			var i = this.indexFromEl(e.target);
 			this.todos[i].completed = !this.todos[i].completed;
-			this.render();
+			let todo = this.getTodo(e);
+			todo.completed = this.todos[i].completed;
+			await dbMod.updateTodo(todo).then(()=>{
+				this.render();
+			});
 		},
 		edit: function (e) {
 			var $input = $(e.target).closest('li').addClass('editing').find('.edit');
@@ -174,11 +179,13 @@ jQuery(function ($) {
 				$(e.target).data('abort', true).blur();
 			}
 		},
-		update: function (e) {
+		update: async function (e) {
+			debugger;
 			var el = e.target;
 			var $el = $(el);
 			var val = $el.val().trim();
-
+			var todo = this.getTodo(e);
+			todo.title = val;
 			if (!val) {
 				this.destroy(e);
 				return;
@@ -189,12 +196,20 @@ jQuery(function ($) {
 			} else {
 				this.todos[this.indexFromEl(el)].title = val;
 			}
-
-			this.render();
+			await dbMod.updateTodo(todo).then(()=>{
+				this.render();
+			});
+			
 		},
 		destroy: function (e) {
 			this.todos.splice(this.indexFromEl(e.target), 1);
 			this.render();
+		},
+		getTodo(e){			
+			var $el = $(e.target).parent();
+			var label =$el.find('label').text()
+			var li = $($el.closest("li")[0]);
+			return { id: li.attr("data-id"), title: label, completed: li.hasClass("completed")}
 		}
 	};
 

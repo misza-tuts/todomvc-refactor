@@ -1,25 +1,35 @@
 import { lsMod } from './lsMod';
 import { restMod } from './restMod';
+var  appMode =  [lsMod];
 
 export const dbMod = {
-  appMode: [lsMod, restMod],
-  getTodos() {
-    let toReturn;
-    this.appMode.forEach(elem => {
-      toReturn = elem.getTodos()
+  async getTodos() {
+    return await appMode[0].getTodos();
+  },
+
+  async createTodo(todo){
+    let promises = []; 
+
+    appMode.forEach(elem => {     
+      promises.push(elem.createTodo(todo));
     })
-    return toReturn;
+    await Promise.all(promises);
   },
 
-  createTodo(title){
-    this.appMode.forEach(elem => {
-      toReturn = elem.putTodos(title)
+  async updateTodo(todo){
+    let promises = [];    
+    //let todo = { "id": this.id, "title": title, "completed": completed }
+    appMode.forEach(elem => {
+      promises.push(elem.updateTodo(todo));
     })
+    await Promise.all(promises);
   },
 
-  updateTodo(id, title, completed){
-
-  },
-
-  deleteTodo(id){}
+  async deleteTodo(id){
+    let promises = [];    
+    appMode.forEach(elem => {
+      promises.push(elem.deleteTodo(id));
+    })
+    await Promise.all(promises);
+  }
 };

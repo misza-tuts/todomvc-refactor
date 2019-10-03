@@ -1,6 +1,8 @@
 export const restMod = {
-  getTodos() {},
-  createTodo() {},
+  async getTodos() {
+    
+  },
+  createTodo(todo) {},
   updateTodo() {},
   deleteTodo() {}
 };
