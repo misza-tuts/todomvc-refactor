@@ -7,7 +7,7 @@ npm-debug.log
 
 # additional modules (compilers, setup)
 node_modules
-
+.cache
 # original todomvc
 node_modules/jquery
 !node_modules/jquery/dist/jquery.js

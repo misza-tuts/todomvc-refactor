@@ -1,3 +1,9 @@
+import jQuery from 'jquery'
+import Handlebars from 'handlebars'
+import { Router } from 'director/build/director'
+import axios from 'axios'
+import { dbMod } from './dbMod'
+
 /*global jQuery, Handlebars, Router */
 jQuery(function ($) {
 	'use strict';
