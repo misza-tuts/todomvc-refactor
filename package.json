@@ -10,6 +10,7 @@
     "parcel": "parcel index.html"
   },
   "dependencies": {
+    "axios": "^0.19.0",
     "director": "~1.2.2",
     "handlebars": "~2.0.0",
     "jquery": "~2.1.1",
