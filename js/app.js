@@ -43,7 +43,7 @@ jQuery(function ($) {
 		init: async function () {
 			let initF = this;
 			 await dbMod.getTodos().then(function(data){
-				initF.todos = data;
+				initF.todos = data.data;
 				initF.todoTemplate = Handlebars.compile($('#todo-template').html());
 				initF.footerTemplate = Handlebars.compile($('#footer-template').html());
 				initF.bindEvents();
@@ -88,13 +88,14 @@ jQuery(function ($) {
 
 			$('#footer').toggle(todoCount > 0).html(template);
 		},
-		toggleAll: function (e) {
+		toggleAll: async function (e) {
 			var isChecked = $(e.target).prop('checked');
-
+			let promises = [];
 			this.todos.forEach(function (todo) {
 				todo.completed = isChecked;
-			});
-
+				promises.push(dbMod.updateTodo(todo));
+			});			
+			await Promise.all(promises);
 			this.render();
 		},
 		getActiveTodos: function () {
@@ -118,9 +119,17 @@ jQuery(function ($) {
 
 			return this.todos;
 		},
-		destroyCompleted: function () {
+		destroyCompleted: async function () {
+			let completed = this.getCompletedTodos();
 			this.todos = this.getActiveTodos();
 			this.filter = 'all';
+
+			let promises = [];
+			completed.forEach(function (todo) {
+				promises.push(dbMod.deleteTodo(todo));
+			});			
+			await Promise.all(promises);
+
 			this.render();
 		},
 		// accepts an element from inside the `.item` div and
@@ -153,18 +162,18 @@ jQuery(function ($) {
 			this.todos.push(todo);
 
 			$input.val('');
-				await dbMod.createTodo(todo).then(()=> {
-					this.render();
-				});			
+				await dbMod.createTodo(todo)
+				this.render();
+							
 		},
 		toggle: async function (e) {
 			var i = this.indexFromEl(e.target);
 			this.todos[i].completed = !this.todos[i].completed;
 			let todo = this.getTodo(e);
 			todo.completed = this.todos[i].completed;
-			await dbMod.updateTodo(todo).then(()=>{
-				this.render();
-			});
+			await dbMod.updateTodo(todo);
+			this.render();
+		
 		},
 		edit: function (e) {
 			var $input = $(e.target).closest('li').addClass('editing').find('.edit');
@@ -180,7 +189,6 @@ jQuery(function ($) {
 			}
 		},
 		update: async function (e) {
-			debugger;
 			var el = e.target;
 			var $el = $(el);
 			var val = $el.val().trim();
@@ -204,9 +212,9 @@ jQuery(function ($) {
 		destroy: async function (e) {
 			this.todos.splice(this.indexFromEl(e.target), 1);
 			let todo = this.getTodo(e);
-			await dbMod.deleteTodo(todo).then(()=>{
-				this.render();
-			});
+			await dbMod.deleteTodo(todo);
+			this.render();
+		
 		},
 		getTodo(e){			
 			var $el = $(e.target).parent();

@@ -1,6 +1,6 @@
 import { lsMod } from './lsMod';
 import { restMod } from './restMod';
-var  appMode =  [lsMod];
+var  appMode =  [lsMod, restMod]; //first one is the source of truth
 
 export const dbMod = {
   async getTodos() {
@@ -18,7 +18,6 @@ export const dbMod = {
 
   async updateTodo(todo){
     let promises = [];    
-    //let todo = { "id": this.id, "title": title, "completed": completed }
     appMode.forEach(elem => {
       promises.push(elem.updateTodo(todo));
     })
