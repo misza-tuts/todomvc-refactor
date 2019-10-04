@@ -3,6 +3,8 @@ import Handlebars from 'handlebars'
 import { Router } from 'director/build/director'
 import axios from 'axios'
 import { dbMod } from './dbMod'
+import { restMod } from './restMod'
+import "@babel/poyfill"
 
 /*global jQuery, Handlebars, Router */
 jQuery(function ($) {
@@ -41,12 +43,17 @@ jQuery(function ($) {
 				var store = localStorage.getItem(namespace);
 				return (store && JSON.parse(store)) || [];
 			}
+		},
+		async getTodos() {
+			const res = await axios.get(URL);
+			return res.data;
 		}
 	};
 
 	var App = {
 		init: function () {
-			this.todos = util.store('todos-jquery');
+		util.getTodos().then( res=>
+			this.todos = res)
 			this.todoTemplate = Handlebars.compile($('#todo-template').html());
 			this.footerTemplate = Handlebars.compile($('#footer-template').html());
 			this.bindEvents();
