@@ -3,15 +3,16 @@ import axios from 'axios'
 export const restMod = {
   async getTodos() {
      const response = await axios.get('http://localhost:3000/todos');
-     return response;
+     return response.data;
   },
   async createTodo(todo) { 
-    await axios.post("http://localhost:3000/todos", todo);
+   await axios.post("http://localhost:3000/todos", todo);
   },
   async updateTodo(todo) { 
-    await axios.patch(`http://localhost:3000/todos/${todo.id}`, todo);
+     await axios.patch(`http://localhost:3000/todos/${todo.id}`, todo);
+
   },
   async deleteTodo(todo) {
-    await axios.delete(`http://localhost:3000/todos/${todo.id}`);
+     await axios.delete(`http://localhost:3000/todos/${todo.id}`);
    }
 };

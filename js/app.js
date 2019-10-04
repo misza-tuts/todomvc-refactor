@@ -43,7 +43,7 @@ jQuery(function ($) {
 		init: async function () {
 			let initF = this;
 			 await dbMod.getTodos().then(function(data){
-				initF.todos = data.data;
+				initF.todos = data;
 				initF.todoTemplate = Handlebars.compile($('#todo-template').html());
 				initF.footerTemplate = Handlebars.compile($('#footer-template').html());
 				initF.bindEvents();

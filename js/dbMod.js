@@ -1,6 +1,6 @@
 import { lsMod } from './lsMod';
 import { restMod } from './restMod';
-var  appMode =  [lsMod, restMod]; //first one is the source of truth
+var  appMode =  [restMod, lsMod]; //first one is the source of truth
 
 export const dbMod = {
   async getTodos() {
